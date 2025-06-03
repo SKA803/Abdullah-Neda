@@ -246,6 +246,42 @@
       width: auto;
     }
     
+    .vacation-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .vacation-buttons button {
+      flex: 1;
+      padding: 10px;
+    }
+    
+    .btn-vacation-paid {
+      background-color: #4CAF50;
+    }
+    
+    .btn-vacation-unpaid {
+      background-color: #ff9800;
+    }
+    
+    .vacation-paid {
+      background-color: #e8f5e9;
+    }
+    
+    .vacation-unpaid {
+      background-color: #fff3e0;
+    }
+    
+    .developer-credit {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.9em;
+      color: #666;
+      padding: 10px;
+      border-top: 1px solid #eee;
+    }
+    
     @media (max-width: 600px) {
       .container {
         padding: 15px;
@@ -277,6 +313,10 @@
       .payment-btn {
         width: 100%;
       }
+      
+      .vacation-buttons {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -288,15 +328,15 @@
       <h3>الإعدادات</h3>
       <div class="form-group">
         <label for="workingDays">عدد أيام العمل الشهرية</label>
-        <input type="number" id="workingDays" min="1" value="30" readonly>
+        <input type="number" id="workingDays" min="1">
       </div>
       <div class="form-group">
         <label for="monthlySalary">الراتب الشهري (جنية)</label>
-        <input type="number" id="monthlySalary" min="1" value="6000">
+        <input type="number" id="monthlySalary" min="1">
       </div>
       <div class="form-group">
         <label for="overtimeRate">قيمة الساعة الإضافية (جنية)</label>
-        <input type="number" id="overtimeRate" min="1" value="50">
+        <input type="number" id="overtimeRate" min="1">
       </div>
     </div>
     
@@ -309,17 +349,22 @@
     <div class="form-group">
       <label>ساعات العمل</label>
       <div class="time-inputs">
-        <input type="time" id="startTime" placeholder="وقت الدخول" required value="08:00">
-        <input type="time" id="endTime" placeholder="وقت الخروج" required value="16:00">
+        <input type="time" id="startTime" placeholder="وقت الدخول" required>
+        <input type="time" id="endTime" placeholder="وقت الخروج" required>
       </div>
     </div>
     
     <div class="form-group">
       <label>مصاريف المواصلات</label>
       <div class="transport-inputs">
-        <input type="number" id="morningTransport" min="0" placeholder="الصبح" value="">
-        <input type="number" id="eveningTransport" min="0" placeholder="المساء" value="">
+        <input type="number" id="morningTransport" min="0" placeholder="الصبح" value="0">
+        <input type="number" id="eveningTransport" min="0" placeholder="المساء" value="0">
       </div>
+    </div>
+    
+    <div class="vacation-buttons">
+      <button id="paidVacationBtn" class="btn-vacation-paid">إجازة مدفوعة</button>
+      <button id="unpaidVacationBtn" class="btn-vacation-unpaid">إجازة غير مدفوعة</button>
     </div>
     
     <div class="action-buttons">
@@ -393,12 +438,21 @@
     <div class="action-buttons">
       <button id="clearAllBtn" class="btn-danger">حذف كل السجلات</button>
     </div>
+    
+    <div class="developer-credit">
+      تم برمجة هذا الموقع من قبل المطور عبد الله ندا
+    </div>
   </div>
 
   <script>
     // تحميل البيانات المحفوظة
     let workDays = JSON.parse(localStorage.getItem('workRecords')) || [];
     let payments = JSON.parse(localStorage.getItem('paymentRecords')) || [];
+    let settings = JSON.parse(localStorage.getItem('appSettings')) || {
+      workingDays: null,
+      monthlySalary: null,
+      overtimeRate: null
+    };
     
     // عناصر الصفحة
     const dateInput = document.getElementById('date');
@@ -416,9 +470,13 @@
     const paymentAmountInput = document.getElementById('paymentAmount');
     const paymentHistoryDiv = document.getElementById('paymentHistory');
     const tableBody = document.querySelector('#workTable tbody');
+    const paidVacationBtn = document.getElementById('paidVacationBtn');
+    const unpaidVacationBtn = document.getElementById('unpaidVacationBtn');
     
     // إعدادات العمل
     const NORMAL_DAILY_HOURS = 8; // عدد الساعات العادية في اليوم
+    let isPaidVacation = false;
+    let isUnpaidVacation = false;
     
     // عرض البيانات عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', () => {
@@ -426,9 +484,47 @@
       const today = new Date().toISOString().split('T')[0];
       dateInput.value = today;
       
+      // تحميل الإعدادات
+      if (settings.workingDays) workingDaysInput.value = settings.workingDays;
+      if (settings.monthlySalary) monthlySalaryInput.value = settings.monthlySalary;
+      if (settings.overtimeRate) overtimeRateInput.value = settings.overtimeRate;
+      
       renderTable();
       updateSummary();
       updatePayments();
+    });
+    
+    // حفظ الإعدادات عند التغيير
+    workingDaysInput.addEventListener('change', saveSettings);
+    monthlySalaryInput.addEventListener('change', saveSettings);
+    overtimeRateInput.addEventListener('change', saveSettings);
+    
+    function saveSettings() {
+      settings = {
+        workingDays: workingDaysInput.value ? parseInt(workingDaysInput.value) : null,
+        monthlySalary: monthlySalaryInput.value ? parseFloat(monthlySalaryInput.value) : null,
+        overtimeRate: overtimeRateInput.value ? parseFloat(overtimeRateInput.value) : null
+      };
+      localStorage.setItem('appSettings', JSON.stringify(settings));
+    }
+    
+    // تحديد نوع الإجازة
+    paidVacationBtn.addEventListener('click', () => {
+      isPaidVacation = true;
+      isUnpaidVacation = false;
+      startTimeInput.value = '09:00';
+      endTimeInput.value = '17:00';
+      morningTransportInput.value = '0';
+      eveningTransportInput.value = '0';
+    });
+    
+    unpaidVacationBtn.addEventListener('click', () => {
+      isUnpaidVacation = true;
+      isPaidVacation = false;
+      startTimeInput.value = '09:00';
+      endTimeInput.value = '17:00';
+      morningTransportInput.value = '0';
+      eveningTransportInput.value = '0';
     });
     
     // حفظ البيانات
@@ -447,29 +543,50 @@
         return;
       }
       
-      // حساب عدد ساعات العمل
-      const start = new Date(`2000-01-01T${startTime}`);
-      const end = new Date(`2000-01-01T${endTime}`);
-      let hours = (end - start) / (1000 * 60 * 60);
-      if (hours < 0) hours += 24; // في حالة العمل ليلاً
-      
       // حساب الأجر اليومي الأساسي
       const dailyRate = monthlySalary / workingDays;
       
-      // حساب الأجر الأساسي
-      const baseSalary = dailyRate;
+      let baseSalary = 0;
+      let overtimeHours = 0;
+      let overtimeSalary = 0;
+      let totalTransport = 0;
+      let totalSalary = 0;
+      let hours = 0;
+      let dayType = 'normal';
       
-      // حساب الساعات الإضافية (أكثر من 8 ساعات)
-      const overtimeHours = Math.max(0, hours - NORMAL_DAILY_HOURS);
-      
-      // حساب قيمة الساعة الإضافية
-      const overtimeSalary = overtimeHours * overtimeRate;
-      
-      // إجمالي المواصلات
-      const totalTransport = morningTransport + eveningTransport;
-      
-      // الأجر الكلي لليوم
-      const totalSalary = baseSalary + overtimeSalary + totalTransport;
+      if (isPaidVacation) {
+        // إجازة مدفوعة
+        baseSalary = dailyRate;
+        totalSalary = baseSalary;
+        dayType = 'paid_vacation';
+      } else if (isUnpaidVacation) {
+        // إجازة غير مدفوعة
+        baseSalary = 0;
+        totalSalary = 0;
+        dayType = 'unpaid_vacation';
+      } else {
+        // يوم عمل عادي
+        // حساب عدد ساعات العمل
+        const start = new Date(`2000-01-01T${startTime}`);
+        const end = new Date(`2000-01-01T${endTime}`);
+        hours = (end - start) / (1000 * 60 * 60);
+        if (hours < 0) hours += 24; // في حالة العمل ليلاً
+        
+        // حساب الأجر الأساسي
+        baseSalary = dailyRate;
+        
+        // حساب الساعات الإضافية (أكثر من 8 ساعات)
+        overtimeHours = Math.max(0, hours - NORMAL_DAILY_HOURS);
+        
+        // حساب قيمة الساعة الإضافية
+        overtimeSalary = overtimeHours * overtimeRate;
+        
+        // إجمالي المواصلات
+        totalTransport = morningTransport + eveningTransport;
+        
+        // الأجر الكلي لليوم
+        totalSalary = baseSalary + overtimeSalary + totalTransport;
+      }
       
       // التحقق من عدم تكرار التاريخ
       const existingDay = workDays.find(day => day.date === date);
@@ -491,7 +608,8 @@
           overtimeHours,
           overtimeSalary,
           totalTransport,
-          totalSalary
+          totalSalary,
+          dayType
         };
       } else {
         // إضافة سجل جديد
@@ -507,7 +625,8 @@
           overtimeHours,
           overtimeSalary,
           totalTransport,
-          totalSalary
+          totalSalary,
+          dayType
         });
       }
       
@@ -519,10 +638,12 @@
       updateSummary();
       
       // إعادة تعيين الحقول
-      startTimeInput.value = '08:00';
-      endTimeInput.value = '16:00';
+      startTimeInput.value = '';
+      endTimeInput.value = '';
       morningTransportInput.value = '0';
       eveningTransportInput.value = '0';
+      isPaidVacation = false;
+      isUnpaidVacation = false;
     });
     
     // إضافة دفعة
@@ -593,19 +714,63 @@
       
       workDays.forEach((day, index) => {
         const row = document.createElement('tr');
+        
+        // تحديد فئة الصف حسب نوع اليوم
+        if (day.dayType === 'paid_vacation') {
+          row.className = 'vacation-paid';
+        } else if (day.dayType === 'unpaid_vacation') {
+          row.className = 'vacation-unpaid';
+        }
+        
+        // تحديد النص المعروض حسب نوع اليوم
+        let displayText = {
+          startTime: day.startTime,
+          endTime: day.endTime,
+          hours: day.hours.toFixed(2),
+          morningTransport: day.morningTransport.toFixed(2),
+          eveningTransport: day.eveningTransport.toFixed(2),
+          baseSalary: day.baseSalary.toFixed(2),
+          overtimeHours: day.overtimeHours.toFixed(2),
+          overtimeSalary: day.overtimeSalary.toFixed(2),
+          totalTransport: day.totalTransport.toFixed(2),
+          totalSalary: day.totalSalary.toFixed(2)
+        };
+        
+        if (day.dayType === 'paid_vacation') {
+          displayText.startTime = 'إجازة';
+          displayText.endTime = 'مدفوعة';
+          displayText.hours = '0.00';
+          displayText.morningTransport = '0.00';
+          displayText.eveningTransport = '0.00';
+          displayText.overtimeHours = '0.00';
+          displayText.overtimeSalary = '0.00';
+          displayText.totalTransport = '0.00';
+        } else if (day.dayType === 'unpaid_vacation') {
+          displayText.startTime = 'إجازة';
+          displayText.endTime = 'غير مدفوعة';
+          displayText.hours = '0.00';
+          displayText.morningTransport = '0.00';
+          displayText.eveningTransport = '0.00';
+          displayText.baseSalary = '0.00';
+          displayText.overtimeHours = '0.00';
+          displayText.overtimeSalary = '0.00';
+          displayText.totalTransport = '0.00';
+          displayText.totalSalary = '0.00';
+        }
+        
         row.innerHTML = `
           <td>${formatDate(day.date)}</td>
           <td>${day.dayName}</td>
-          <td>${day.startTime}</td>
-          <td>${day.endTime}</td>
-          <td>${day.hours.toFixed(2)}</td>
-          <td>${day.morningTransport.toFixed(2)}</td>
-          <td>${day.eveningTransport.toFixed(2)}</td>
-          <td>${day.baseSalary.toFixed(2)}</td>
-          <td>${day.overtimeHours.toFixed(2)}</td>
-          <td>${day.overtimeSalary.toFixed(2)}</td>
-          <td>${day.totalTransport.toFixed(2)}</td>
-          <td>${day.totalSalary.toFixed(2)}</td>
+          <td>${displayText.startTime}</td>
+          <td>${displayText.endTime}</td>
+          <td>${displayText.hours}</td>
+          <td>${displayText.morningTransport}</td>
+          <td>${displayText.eveningTransport}</td>
+          <td>${displayText.baseSalary}</td>
+          <td>${displayText.overtimeHours}</td>
+          <td>${displayText.overtimeSalary}</td>
+          <td>${displayText.totalTransport}</td>
+          <td>${displayText.totalSalary}</td>
           <td><button class="btn-danger" onclick="deleteDay(${index})">حذف</button></td>
         `;
         tableBody.appendChild(row);
@@ -614,13 +779,24 @@
     
     // تحديث الإجماليات والإحصائيات
     function updateSummary() {
-      const totalDays = workDays.length;
-      const totalHours = workDays.reduce((sum, day) => sum + day.hours, 0);
-      const totalOvertimeHours = workDays.reduce((sum, day) => sum + day.overtimeHours, 0);
-      const totalOvertimeValue = workDays.reduce((sum, day) => sum + day.overtimeSalary, 0);
-      const totalTransport = workDays.reduce((sum, day) => sum + day.totalTransport, 0);
-      const totalBaseSalary = workDays.reduce((sum, day) => sum + day.baseSalary, 0);
-      const totalSalary = workDays.reduce((sum, day) => sum + day.totalSalary, 0);
+      // حساب الأيام العادية فقط (لا تشمل الإجازات غير المدفوعة)
+      const normalDays = workDays.filter(day => day.dayType !== 'unpaid_vacation');
+      const totalDays = normalDays.length;
+      
+      // حساب الساعات الإضافية (لا تشمل أيام الإجازات)
+      const workDaysOnly = workDays.filter(day => day.dayType === 'normal');
+      const totalHours = workDaysOnly.reduce((sum, day) => sum + day.hours, 0);
+      const totalOvertimeHours = workDaysOnly.reduce((sum, day) => sum + day.overtimeHours, 0);
+      const totalOvertimeValue = workDaysOnly.reduce((sum, day) => sum + day.overtimeSalary, 0);
+      
+      // إجمالي المواصلات (لا تشمل أيام الإجازات)
+      const totalTransport = workDaysOnly.reduce((sum, day) => sum + day.totalTransport, 0);
+      
+      // إجمالي الأجر الأساسي (يشمل الأيام العادية والإجازات المدفوعة)
+      const totalBaseSalary = normalDays.reduce((sum, day) => sum + day.baseSalary, 0);
+      
+      // الإجمالي الكلي (يشمل الأيام العادية والإجازات المدفوعة)
+      const totalSalary = normalDays.reduce((sum, day) => sum + day.totalSalary, 0);
       
       document.getElementById('totalDaysStat').textContent = totalDays;
       document.getElementById('daysValue').textContent = totalBaseSalary.toFixed(2) + ' ج.م';
@@ -635,7 +811,10 @@
     
     // تحديث بيانات المدفوعات
     function updatePayments() {
-      const totalSalary = workDays.reduce((sum, day) => sum + day.totalSalary, 0);
+      // حساب الإجمالي الكلي (يشمل الأيام العادية والإجازات المدفوعة)
+      const normalDays = workDays.filter(day => day.dayType !== 'unpaid_vacation');
+      const totalSalary = normalDays.reduce((sum, day) => sum + day.totalSalary, 0);
+      
       const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
       const remaining = totalSalary - totalPaid;
       
@@ -666,6 +845,7 @@
     function saveData() {
       localStorage.setItem('workRecords', JSON.stringify(workDays));
       localStorage.setItem('paymentRecords', JSON.stringify(payments));
+      saveSettings();
     }
     
     // تصدير إلى Excel
@@ -679,30 +859,37 @@
       let csvContent = "data:text/csv;charset=utf-8,";
       
       // عنوان الجدول
-      csvContent += "التاريخ,اليوم,وقت الدخول,وقت الخروج,الساعات,مواصلات صباح,مواصلات مساء,الأجر الأساسي,الساعات الإضافية,قيمة الإضافي,إجمالي المواصلات,الإجمالي\n";
+      csvContent += "التاريخ,اليوم,وقت الدخول,وقت الخروج,الساعات,مواصلات صباح,مواصلات مساء,الأجر الأساسي,الساعات الإضافية,قيمة الإضافي,إجمالي المواصلات,الإجمالي,النوع\n";
       
       // بيانات الجدول
       workDays.forEach(day => {
-        csvContent += `${day.date},${day.dayName},${day.startTime},${day.endTime},${day.hours.toFixed(2)},${day.morningTransport.toFixed(2)},${day.eveningTransport.toFixed(2)},${day.baseSalary.toFixed(2)},${day.overtimeHours.toFixed(2)},${day.overtimeSalary.toFixed(2)},${day.totalTransport.toFixed(2)},${day.totalSalary.toFixed(2)}\n`;
+        let dayType = 'يوم عمل عادي';
+        if (day.dayType === 'paid_vacation') dayType = 'إجازة مدفوعة';
+        if (day.dayType === 'unpaid_vacation') dayType = 'إجازة غير مدفوعة';
+        
+        csvContent += `${day.date},${day.dayName},${day.startTime},${day.endTime},${day.hours.toFixed(2)},${day.morningTransport.toFixed(2)},${day.eveningTransport.toFixed(2)},${day.baseSalary.toFixed(2)},${day.overtimeHours.toFixed(2)},${day.overtimeSalary.toFixed(2)},${day.totalTransport.toFixed(2)},${day.totalSalary.toFixed(2)},${dayType}\n`;
       });
       
       // الإجماليات
-      const totalDays = workDays.length;
-      const totalHours = workDays.reduce((sum, day) => sum + day.hours, 0);
-      const totalOvertimeHours = workDays.reduce((sum, day) => sum + day.overtimeHours, 0);
-      const totalOvertimeValue = workDays.reduce((sum, day) => sum + day.overtimeSalary, 0);
-      const totalTransport = workDays.reduce((sum, day) => sum + day.totalTransport, 0);
-      const totalBaseSalary = workDays.reduce((sum, day) => sum + day.baseSalary, 0);
-      const totalSalary = workDays.reduce((sum, day) => sum + day.totalSalary, 0);
+      const normalDays = workDays.filter(day => day.dayType !== 'unpaid_vacation');
+      const workDaysOnly = workDays.filter(day => day.dayType === 'normal');
       
-      csvContent += `\nالإجماليات,,,,,,,,,,,\n`;
-      csvContent += `عدد الأيام,${totalDays},,,,,,,,,,\n`;
-      csvContent += `إجمالي الساعات,${totalHours.toFixed(2)},,,,,,,,,,\n`;
-      csvContent += `إجمالي الساعات الإضافية,${totalOvertimeHours.toFixed(2)},,,,,,,,,,\n`;
-      csvContent += `إجمالي قيمة الإضافي,${totalOvertimeValue.toFixed(2)},,,,,,,,,,\n`;
-      csvContent += `إجمالي المواصلات,${totalTransport.toFixed(2)},,,,,,,,,,\n`;
-      csvContent += `إجمالي الأجر الأساسي,${totalBaseSalary.toFixed(2)},,,,,,,,,,\n`;
-      csvContent += `الإجمالي الكلي,${totalSalary.toFixed(2)},,,,,,,,,,\n`;
+      const totalDays = normalDays.length;
+      const totalHours = workDaysOnly.reduce((sum, day) => sum + day.hours, 0);
+      const totalOvertimeHours = workDaysOnly.reduce((sum, day) => sum + day.overtimeHours, 0);
+      const totalOvertimeValue = workDaysOnly.reduce((sum, day) => sum + day.overtimeSalary, 0);
+      const totalTransport = workDaysOnly.reduce((sum, day) => sum + day.totalTransport, 0);
+      const totalBaseSalary = normalDays.reduce((sum, day) => sum + day.baseSalary, 0);
+      const totalSalary = normalDays.reduce((sum, day) => sum + day.totalSalary, 0);
+      
+      csvContent += `\nالإجماليات,,,,,,,,,,,,\n`;
+      csvContent += `عدد الأيام,${totalDays},,,,,,,,,,,\n`;
+      csvContent += `إجمالي الساعات,${totalHours.toFixed(2)},,,,,,,,,,,\n`;
+      csvContent += `إجمالي الساعات الإضافية,${totalOvertimeHours.toFixed(2)},,,,,,,,,,,\n`;
+      csvContent += `إجمالي قيمة الإضافي,${totalOvertimeValue.toFixed(2)},,,,,,,,,,,\n`;
+      csvContent += `إجمالي المواصلات,${totalTransport.toFixed(2)},,,,,,,,,,,\n`;
+      csvContent += `إجمالي الأجر الأساسي,${totalBaseSalary.toFixed(2)},,,,,,,,,,,\n`;
+      csvContent += `الإجمالي الكلي,${totalSalary.toFixed(2)},,,,,,,,,,,\n`;
       
       // المدفوعات
       if (payments.length > 0) {
