@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام تسجيل العمل اليومي</title>
+  <style>
+    :root {
+      --primary-color: #4CAF50;
+      --primary-hover: #45a049;
+      --secondary-color: #2196F3;
+      --secondary-hover: #0b7dda;
+      --danger-color: #f44336;
+      --danger-hover: #d32f2f;
+      --text-color: #333;
+      --light-bg: #f5f5f5;
+      --white: #fff;
+      --border-color: #ddd;
+      --success-bg: #e9f7ef;
+      --info-bg: #e7f3fe;
+      --warning-bg: #fff3cd;
+      --warning-border: #ffeeba;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 15px;
+      background-color: var(--light-bg);
+      color: var(--text-color);
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--white);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    h1, h2, h3 {
+      color: var(--text-color);
+      margin-top: 0;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+      text-align: right;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+    }
+    
+    button {
+      color: var(--white);
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-secondary {
+      background-color: var(--secondary-color);
+    }
+    
+    .btn-secondary:hover {
+      background-color: var(--secondary-hover);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+    }
+    
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 0.9em;
+    }
+    
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      text-align: center;
+    }
+    
+    th {
+      background-color: #f2f2f2;
+    }
+    
+    .summary-card {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: var(--success-bg);
+      border-radius: 5px;
+      text-align: right;
+    }
+    
+    .overtime-card {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: var(--info-bg);
+      border-radius: 5px;
+      text-align: right;
+    }
+    
+    .result-box {
+      background-color: var(--warning-bg);
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      border: 1px solid var(--warning-border);
+    }
+    
+    .stats-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .stat-card {
+      flex: 1;
+      min-width: 150px;
+      background: var(--white);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: var(--primary-color);
+      margin: 5px 0;
+    }
+    
+    .settings-panel {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .action-buttons button {
+      margin-top: 0;
+    }
+    
+    .time-inputs {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .time-inputs input {
+      flex: 1;
+    }
+    
+    .transport-inputs {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .transport-inputs input {
+      flex: 1;
+    }
+    
+    .payment-container {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .payment-inputs {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .payment-inputs input {
+      flex: 2;
+      padding: 12px;
+    }
+    
+    .payment-btn {
+      flex: 1;
+      padding: 12px;
+      margin-top: 0;
+    }
+    
+    .payment-history {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+    
+    .payment-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .payment-item button {
+      padding: 5px 10px;
+      font-size: 0.8em;
+      width: auto;
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+      
+      table {
+        font-size: 0.8em;
+      }
+      
+      th, td {
+        padding: 6px 4px;
+      }
+      
+      .stats-container {
+        flex-direction: column;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .time-inputs, 
+      .transport-inputs,
+      .payment-inputs {
+        flex-direction: column;
+      }
+      
+      .payment-inputs input,
+      .payment-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>نظام تسجيل العمل اليومي شركه جونسون</h1>
+    
+    <div class="settings-panel">
+      <h3>الإعدادات</h3>
+      <div class="form-group">
+        <label for="workingDays">عدد أيام العمل الشهرية</label>
+        <input type="number" id="workingDays" min="1" value="30" readonly>
+      </div>
+      <div class="form-group">
+        <label for="monthlySalary">الراتب الشهري (جنية)</label>
+        <input type="number" id="monthlySalary" min="1" value="6000">
+      </div>
+      <div class="form-group">
+        <label for="overtimeRate">قيمة الساعة الإضافية (جنية)</label>
+        <input type="number" id="overtimeRate" min="1" value="50">
+      </div>
+    </div>
+    
+    <h2>إضافة يوم عمل جديد</h2>
+    <div class="form-group">
+      <label for="date">التاريخ</label>
+      <input type="date" id="date" required>
+    </div>
+    
+    <div class="form-group">
+      <label>ساعات العمل</label>
+      <div class="time-inputs">
+        <input type="time" id="startTime" placeholder="وقت الدخول" required value="08:00">
+        <input type="time" id="endTime" placeholder="وقت الخروج" required value="16:00">
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>مصاريف المواصلات</label>
+      <div class="transport-inputs">
+        <input type="number" id="morningTransport" min="0" placeholder="الصبح" value="">
+        <input type="number" id="eveningTransport" min="0" placeholder="المساء" value="">
+      </div>
+    </div>
+    
+    <div class="action-buttons">
+      <button id="saveBtn" class="btn-primary">حفظ اليومية</button>
+      <button id="exportBtn" class="btn-secondary">تصدير إلى Excel</button>
+    </div>
+    
+    <div class="stats-container">
+      <div class="stat-card">
+        <div>إجمالي الأيام</div>
+        <div class="stat-value" id="totalDaysStat">0</div>
+        <div id="daysValue">0 ج.م</div>
+      </div>
+      <div class="stat-card">
+        <div>الساعات الإضافية</div>
+        <div class="stat-value" id="overtimeHoursStat">0</div>
+        <div id="overtimeValueStat">0 ج.م</div>
+      </div>
+      <div class="stat-card">
+        <div>إجمالي المواصلات</div>
+        <div class="stat-value" id="totalTransportStat">0</div>
+        <div>جنية</div>
+      </div>
+      <div class="stat-card">
+        <div>المجموع الكلي</div>
+        <div class="stat-value" id="totalSalaryStat">0</div>
+        <div>جنية</div>
+      </div>
+    </div>
+    
+    <div class="payment-container">
+      <h3>حساب المدفوعات</h3>
+      <div class="payment-inputs">
+        <input type="number" id="paymentAmount" min="0" placeholder="المبلغ المستلم">
+        <button id="addPaymentBtn" class="btn-primary payment-btn">تسديد</button>
+      </div>
+      <div class="payment-history" id="paymentHistory">
+        <p>لا توجد مدفوعات مسجلة</p>
+      </div>
+      <div class="result-box">
+        <p>إجمالي المبلغ المستحق: <span id="totalDue">0</span> ج.م</p>
+        <p>إجمالي المدفوعات: <span id="totalPaid">0</span> ج.م</p>
+        <p>المتبقي: <span id="remainingAmount">0</span> ج.م</p>
+      </div>
+    </div>
+    
+    <h2>سجل العمل اليومي</h2>
+    <div style="overflow-x: auto;">
+      <table id="workTable">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>اليوم</th>
+            <th>وقت الدخول</th>
+            <th>وقت الخروج</th>
+            <th>الساعات</th>
+            <th>مواصلات صباح</th>
+            <th>مواصلات مساء</th>
+            <th>الأجر الأساسي</th>
+            <th>الساعات الإضافية</th>
+            <th>قيمة الإضافي</th>
+            <th>إجمالي المواصلات</th>
+            <th>الإجمالي</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    
+    <div class="action-buttons">
+      <button id="clearAllBtn" class="btn-danger">حذف كل السجلات</button>
+    </div>
+  </div>
+
+  <script>
+    // تحميل البيانات المحفوظة
+    let workDays = JSON.parse(localStorage.getItem('workRecords')) || [];
+    let payments = JSON.parse(localStorage.getItem('paymentRecords')) || [];
+    
+    // عناصر الصفحة
+    const dateInput = document.getElementById('date');
+    const startTimeInput = document.getElementById('startTime');
+    const endTimeInput = document.getElementById('endTime');
+    const morningTransportInput = document.getElementById('morningTransport');
+    const eveningTransportInput = document.getElementById('eveningTransport');
+    const monthlySalaryInput = document.getElementById('monthlySalary');
+    const workingDaysInput = document.getElementById('workingDays');
+    const overtimeRateInput = document.getElementById('overtimeRate');
+    const saveBtn = document.getElementById('saveBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const addPaymentBtn = document.getElementById('addPaymentBtn');
+    const paymentAmountInput = document.getElementById('paymentAmount');
+    const paymentHistoryDiv = document.getElementById('paymentHistory');
+    const tableBody = document.querySelector('#workTable tbody');
+    
+    // إعدادات العمل
+    const NORMAL_DAILY_HOURS = 8; // عدد الساعات العادية في اليوم
+    
+    // عرض البيانات عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', () => {
+      // تعيين تاريخ اليوم كقيمة افتراضية
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.value = today;
+      
+      renderTable();
+      updateSummary();
+      updatePayments();
+    });
+    
+    // حفظ البيانات
+    saveBtn.addEventListener('click', () => {
+      const date = dateInput.value;
+      const startTime = startTimeInput.value;
+      const endTime = endTimeInput.value;
+      const morningTransport = parseFloat(morningTransportInput.value) || 0;
+      const eveningTransport = parseFloat(eveningTransportInput.value) || 0;
+      const monthlySalary = parseFloat(monthlySalaryInput.value);
+      const workingDays = parseFloat(workingDaysInput.value);
+      const overtimeRate = parseFloat(overtimeRateInput.value);
+      
+      if (!date || !startTime || !endTime || isNaN(monthlySalary) || isNaN(workingDays) || isNaN(overtimeRate)) {
+        alert('الرجاء إدخال جميع البيانات بشكل صحيح');
+        return;
+      }
+      
+      // حساب عدد ساعات العمل
+      const start = new Date(`2000-01-01T${startTime}`);
+      const end = new Date(`2000-01-01T${endTime}`);
+      let hours = (end - start) / (1000 * 60 * 60);
+      if (hours < 0) hours += 24; // في حالة العمل ليلاً
+      
+      // حساب الأجر اليومي الأساسي
+      const dailyRate = monthlySalary / workingDays;
+      
+      // حساب الأجر الأساسي
+      const baseSalary = dailyRate;
+      
+      // حساب الساعات الإضافية (أكثر من 8 ساعات)
+      const overtimeHours = Math.max(0, hours - NORMAL_DAILY_HOURS);
+      
+      // حساب قيمة الساعة الإضافية
+      const overtimeSalary = overtimeHours * overtimeRate;
+      
+      // إجمالي المواصلات
+      const totalTransport = morningTransport + eveningTransport;
+      
+      // الأجر الكلي لليوم
+      const totalSalary = baseSalary + overtimeSalary + totalTransport;
+      
+      // التحقق من عدم تكرار التاريخ
+      const existingDay = workDays.find(day => day.date === date);
+      if (existingDay) {
+        if (!confirm('هذا التاريخ مسجل بالفعل، هل تريد تحديثه؟')) {
+          return;
+        }
+        // تحديث السجل الموجود
+        const index = workDays.findIndex(day => day.date === date);
+        workDays[index] = {
+          date,
+          dayName: getDayName(date),
+          startTime,
+          endTime,
+          hours,
+          morningTransport,
+          eveningTransport,
+          baseSalary,
+          overtimeHours,
+          overtimeSalary,
+          totalTransport,
+          totalSalary
+        };
+      } else {
+        // إضافة سجل جديد
+        workDays.push({
+          date,
+          dayName: getDayName(date),
+          startTime,
+          endTime,
+          hours,
+          morningTransport,
+          eveningTransport,
+          baseSalary,
+          overtimeHours,
+          overtimeSalary,
+          totalTransport,
+          totalSalary
+        });
+      }
+      
+      // ترتيب السجلات حسب التاريخ (من الأحدث إلى الأقدم)
+      workDays.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      saveData();
+      renderTable();
+      updateSummary();
+      
+      // إعادة تعيين الحقول
+      startTimeInput.value = '08:00';
+      endTimeInput.value = '16:00';
+      morningTransportInput.value = '0';
+      eveningTransportInput.value = '0';
+    });
+    
+    // إضافة دفعة
+    addPaymentBtn.addEventListener('click', () => {
+      const amount = parseFloat(paymentAmountInput.value);
+      
+      if (isNaN(amount) || amount <= 0) {
+        alert('الرجاء إدخال مبلغ صحيح');
+        return;
+      }
+      
+      const today = new Date().toISOString().split('T')[0];
+      
+      payments.push({
+        date: today,
+        amount: amount
+      });
+      
+      saveData();
+      updatePayments();
+      paymentAmountInput.value = '';
+    });
+    
+    // حذف يوم عمل
+    function deleteDay(index) {
+      if (confirm('هل أنت متأكد من حذف هذا اليوم؟')) {
+        workDays.splice(index, 1);
+        saveData();
+        renderTable();
+        updateSummary();
+      }
+    }
+    
+    // حذف دفعة
+    function deletePayment(index) {
+      if (confirm('هل أنت متأكد من حذف هذه الدفعة؟')) {
+        payments.splice(index, 1);
+        saveData();
+        updatePayments();
+      }
+    }
+    
+    // حذف جميع السجلات
+    clearAllBtn.addEventListener('click', () => {
+      if (workDays.length === 0) {
+        alert('لا توجد سجلات لحذفها');
+        return;
+      }
+      
+      if (confirm('هل أنت متأكد من حذف جميع السجلات؟ لا يمكن التراجع عن هذا الإجراء.')) {
+        workDays = [];
+        saveData();
+        renderTable();
+        updateSummary();
+      }
+    });
+    
+    // عرض البيانات في الجدول
+    function renderTable() {
+      tableBody.innerHTML = '';
+      
+      if (workDays.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="13" style="text-align: center;">لا توجد سجلات لعرضها</td>`;
+        tableBody.appendChild(row);
+        return;
+      }
+      
+      workDays.forEach((day, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${formatDate(day.date)}</td>
+          <td>${day.dayName}</td>
+          <td>${day.startTime}</td>
+          <td>${day.endTime}</td>
+          <td>${day.hours.toFixed(2)}</td>
+          <td>${day.morningTransport.toFixed(2)}</td>
+          <td>${day.eveningTransport.toFixed(2)}</td>
+          <td>${day.baseSalary.toFixed(2)}</td>
+          <td>${day.overtimeHours.toFixed(2)}</td>
+          <td>${day.overtimeSalary.toFixed(2)}</td>
+          <td>${day.totalTransport.toFixed(2)}</td>
+          <td>${day.totalSalary.toFixed(2)}</td>
+          <td><button class="btn-danger" onclick="deleteDay(${index})">حذف</button></td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+    
+    // تحديث الإجماليات والإحصائيات
+    function updateSummary() {
+      const totalDays = workDays.length;
+      const totalHours = workDays.reduce((sum, day) => sum + day.hours, 0);
+      const totalOvertimeHours = workDays.reduce((sum, day) => sum + day.overtimeHours, 0);
+      const totalOvertimeValue = workDays.reduce((sum, day) => sum + day.overtimeSalary, 0);
+      const totalTransport = workDays.reduce((sum, day) => sum + day.totalTransport, 0);
+      const totalBaseSalary = workDays.reduce((sum, day) => sum + day.baseSalary, 0);
+      const totalSalary = workDays.reduce((sum, day) => sum + day.totalSalary, 0);
+      
+      document.getElementById('totalDaysStat').textContent = totalDays;
+      document.getElementById('daysValue').textContent = totalBaseSalary.toFixed(2) + ' ج.م';
+      document.getElementById('overtimeHoursStat').textContent = totalOvertimeHours.toFixed(2);
+      document.getElementById('overtimeValueStat').textContent = totalOvertimeValue.toFixed(2) + ' ج.م';
+      document.getElementById('totalTransportStat').textContent = totalTransport.toFixed(2);
+      document.getElementById('totalSalaryStat').textContent = totalSalary.toFixed(2);
+      
+      // تحديث المدفوعات
+      updatePayments();
+    }
+    
+    // تحديث بيانات المدفوعات
+    function updatePayments() {
+      const totalSalary = workDays.reduce((sum, day) => sum + day.totalSalary, 0);
+      const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+      const remaining = totalSalary - totalPaid;
+      
+      document.getElementById('totalDue').textContent = totalSalary.toFixed(2);
+      document.getElementById('totalPaid').textContent = totalPaid.toFixed(2);
+      document.getElementById('remainingAmount').textContent = remaining.toFixed(2);
+      
+      // عرض سجل المدفوعات
+      paymentHistoryDiv.innerHTML = '';
+      
+      if (payments.length === 0) {
+        paymentHistoryDiv.innerHTML = '<p>لا توجد مدفوعات مسجلة</p>';
+        return;
+      }
+      
+      payments.forEach((payment, index) => {
+        const paymentItem = document.createElement('div');
+        paymentItem.className = 'payment-item';
+        paymentItem.innerHTML = `
+          <span>${formatDate(payment.date)} - ${payment.amount.toFixed(2)} ج.م</span>
+          <button class="btn-danger" onclick="deletePayment(${index})">حذف</button>
+        `;
+        paymentHistoryDiv.appendChild(paymentItem);
+      });
+    }
+    
+    // حفظ البيانات في localStorage
+    function saveData() {
+      localStorage.setItem('workRecords', JSON.stringify(workDays));
+      localStorage.setItem('paymentRecords', JSON.stringify(payments));
+    }
+    
+    // تصدير إلى Excel
+    exportBtn.addEventListener('click', () => {
+      if (workDays.length === 0) {
+        alert('لا توجد بيانات لتصديرها');
+        return;
+      }
+      
+      // إنشاء محتوى CSV
+      let csvContent = "data:text/csv;charset=utf-8,";
+      
+      // عنوان الجدول
+      csvContent += "التاريخ,اليوم,وقت الدخول,وقت الخروج,الساعات,مواصلات صباح,مواصلات مساء,الأجر الأساسي,الساعات الإضافية,قيمة الإضافي,إجمالي المواصلات,الإجمالي\n";
+      
+      // بيانات الجدول
+      workDays.forEach(day => {
+        csvContent += `${day.date},${day.dayName},${day.startTime},${day.endTime},${day.hours.toFixed(2)},${day.morningTransport.toFixed(2)},${day.eveningTransport.toFixed(2)},${day.baseSalary.toFixed(2)},${day.overtimeHours.toFixed(2)},${day.overtimeSalary.toFixed(2)},${day.totalTransport.toFixed(2)},${day.totalSalary.toFixed(2)}\n`;
+      });
+      
+      // الإجماليات
+      const totalDays = workDays.length;
+      const totalHours = workDays.reduce((sum, day) => sum + day.hours, 0);
+      const totalOvertimeHours = workDays.reduce((sum, day) => sum + day.overtimeHours, 0);
+      const totalOvertimeValue = workDays.reduce((sum, day) => sum + day.overtimeSalary, 0);
+      const totalTransport = workDays.reduce((sum, day) => sum + day.totalTransport, 0);
+      const totalBaseSalary = workDays.reduce((sum, day) => sum + day.baseSalary, 0);
+      const totalSalary = workDays.reduce((sum, day) => sum + day.totalSalary, 0);
+      
+      csvContent += `\nالإجماليات,,,,,,,,,,,\n`;
+      csvContent += `عدد الأيام,${totalDays},,,,,,,,,,\n`;
+      csvContent += `إجمالي الساعات,${totalHours.toFixed(2)},,,,,,,,,,\n`;
+      csvContent += `إجمالي الساعات الإضافية,${totalOvertimeHours.toFixed(2)},,,,,,,,,,\n`;
+      csvContent += `إجمالي قيمة الإضافي,${totalOvertimeValue.toFixed(2)},,,,,,,,,,\n`;
+      csvContent += `إجمالي المواصلات,${totalTransport.toFixed(2)},,,,,,,,,,\n`;
+      csvContent += `إجمالي الأجر الأساسي,${totalBaseSalary.toFixed(2)},,,,,,,,,,\n`;
+      csvContent += `الإجمالي الكلي,${totalSalary.toFixed(2)},,,,,,,,,,\n`;
+      
+      // المدفوعات
+      if (payments.length > 0) {
+        csvContent += `\nسجل المدفوعات,,,\n`;
+        csvContent += `التاريخ,المبلغ,\n`;
+        payments.forEach(payment => {
+          csvContent += `${payment.date},${payment.amount.toFixed(2)},\n`;
+        });
+        
+        const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+        const remaining = totalSalary - totalPaid;
+        
+        csvContent += `\nإجمالي المدفوعات,${totalPaid.toFixed(2)},\n`;
+        csvContent += `المتبقي,${remaining.toFixed(2)},\n`;
+      }
+      
+      // إنشاء ملف للتحميل
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `سجل_العمل_اليومي_${new Date().toLocaleDateString('ar-EG')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+    
+    // تنسيق التاريخ لعرضه بشكل أفضل
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+      return new Date(dateString).toLocaleDateString('ar-EG', options);
+    }
+    
+    // الحصول على اسم اليوم بالعربية
+    function getDayName(dateString) {
+      const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+      const date = new Date(dateString);
+      return days[date.getDay()];
+    }
+    
+    // جعل الدوال متاحة عالمياً
+    window.deleteDay = deleteDay;
+    window.deletePayment = deletePayment;
+  </script>
+</body>
+</html>
